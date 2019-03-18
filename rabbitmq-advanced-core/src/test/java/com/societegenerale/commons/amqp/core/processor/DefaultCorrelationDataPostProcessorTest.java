@@ -16,15 +16,15 @@
 
 package com.societegenerale.commons.amqp.core.processor;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
-import org.springframework.amqp.rabbit.support.CorrelationData;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 
 /**
  * Created by anand on 02/07/17.

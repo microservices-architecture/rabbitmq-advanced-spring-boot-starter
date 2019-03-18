@@ -1,0 +1,77 @@
+{"properties": [
+  {
+    "name": "rabbitmq.auto-config.queues.example.name",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.queues.example.name'"
+  },
+  {
+    "name": "rabbitmq.auto-config.dead-letter-config.dead-letter-exchange.auto-delete",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.dead-letter-config.dead-letter-exchange.auto-delete'"
+  },
+  {
+    "name": "rabbitmq.auto-config.dead-letter-config.dead-letter-exchange.name",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.dead-letter-config.dead-letter-exchange.name'"
+  },
+  {
+    "name": "rabbitmq.auto-config.dead-letter-config.dead-letter-exchange.durable",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.dead-letter-config.dead-letter-exchange.durable'"
+  },
+  {
+    "name": "rabbitmq.auto-config.info-headers.source-application",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.info-headers.source-application'"
+  },
+  {
+    "name": "rabbitmq.auto-config.default-queue.dead-letter-enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.default-queue.dead-letter-enabled'"
+  },
+  {
+    "name": "rabbitmq.auto-config.default-queue.durable",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.default-queue.durable'"
+  },
+  {
+    "name": "rabbitmq.auto-config.default-queue.auto-delete",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.default-queue.auto-delete'"
+  },
+  {
+    "name": "rabbitmq.auto-config.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.enabled'"
+  },
+  {
+    "name": "rabbitmq.auto-config.default-exchange.type",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.default-exchange.type'"
+  },
+  {
+    "name": "rabbitmq.auto-config.default-exchange.durable",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.default-exchange.durable'"
+  },
+  {
+    "name": "rabbitmq.auto-config.default-exchange.auto-delete",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.default-exchange.auto-delete'"
+  },
+  {
+    "name": "rabbitmq.auto-config.info-headers.department",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.info-headers.department'"
+  },
+  {
+    "name": "rabbitmq.auto-config.dead-letter-config.queue-postfix",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.dead-letter-config.queue-postfix'"
+  },
+  {
+    "name": "rabbitmq.auto-config.re-queue-config.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'rabbitmq.auto-config.re-queue-config.enabled'"
+  }
+]}

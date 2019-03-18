@@ -33,61 +33,67 @@ import java.util.*;
 @Slf4j
 public class DeadLetterMessageRecoverer implements MessageRecoverer {
 
-  @Autowired
-  private AmqpTemplate errorTemplate;
+	@Autowired
+	private AmqpTemplate errorTemplate;
 
-  @Autowired
-  private RabbitConfig rabbitmqProperties;
+	@Autowired
+	private RabbitConfig rabbitmqProperties;
 
-  @Autowired(required = false)
-  private List<MessageExceptionHandler> messageExceptionHandlers=new ArrayList<>();
+	@Autowired(required = false)
+	private List<MessageExceptionHandler> messageExceptionHandlers = new ArrayList<>();
 
-  @Override
-  public void recover(final Message message, final Throwable cause) {
-    Map<String, Object> headers = message.getMessageProperties().getHeaders();
-    headers.put("x-exception-stacktrace", ExceptionUtils.getFullStackTrace(cause));
-    headers.put("x-exception-message", ExceptionUtils.getMessage(cause));
-    headers.put("x-exception-root-cause-message", ExceptionUtils.getRootCauseMessage(cause));
-    headers.put("x-original-exchange", message.getMessageProperties().getReceivedExchange());
-    headers.put("x-original-routingKey", message.getMessageProperties().getReceivedRoutingKey());
-    headers.put("x-original-queue", message.getMessageProperties().getConsumerQueue());
-    headers.put("x-recover-time", new Date().toString());
-    String deadLetterExchangeName = rabbitmqProperties.getDeadLetterConfig().getDeadLetterExchange().getName();
-    String deadLetterRoutingKey = rabbitmqProperties.getDeadLetterConfig().createDeadLetterQueueName(message.getMessageProperties().getConsumerQueue());
-    headers.put("x-dead-letter-exchange", deadLetterExchangeName);
-    headers.put("x-dead-letter-queue", deadLetterRoutingKey);
-    if(headers.containsKey("correlation-id")) {
-      message.getMessageProperties().setCorrelationIdString((String) headers.get("correlation-id"));
-    }
+	@Override
+	public void recover(final Message message, final Throwable cause) {
+		Map<String, Object> headers = message.getMessageProperties().getHeaders();
+		headers.put("x-exception-stacktrace", ExceptionUtils.getFullStackTrace(cause));
+		headers.put("x-exception-message", ExceptionUtils.getMessage(cause));
+		headers.put("x-exception-root-cause-message", ExceptionUtils.getRootCauseMessage(cause));
+		headers.put("x-original-exchange", message.getMessageProperties().getReceivedExchange());
+		headers.put("x-original-routingKey", message.getMessageProperties().getReceivedRoutingKey());
+		headers.put("x-original-queue", message.getMessageProperties().getConsumerQueue());
+		headers.put("x-recover-time", new Date().toString());
+		String deadLetterExchangeName = rabbitmqProperties.getDeadLetterConfig().getDeadLetterExchange().getName();
+		String deadLetterRoutingKey = rabbitmqProperties.getDeadLetterConfig()
+				.createDeadLetterQueueName(message.getMessageProperties().getConsumerQueue());
+		headers.put("x-dead-letter-exchange", deadLetterExchangeName);
+		headers.put("x-dead-letter-queue", deadLetterRoutingKey);
+		if (headers.containsKey("correlation-id")) {
+			message.getMessageProperties().setCorrelationId((String) headers.get("correlation-id"));
+		}
 
-    headers.putAll(loadAdditionalHeaders(message, cause));
+		headers.putAll(loadAdditionalHeaders(message, cause));
 
-    for (MessageExceptionHandler messageExceptionHandler : messageExceptionHandlers) {
-      try {
-        messageExceptionHandler.handle(message, cause);
-      } catch (Exception e) {
-        // To catch any exception in the  MessageExceptionHandler to avoid the interruption in other MessageExceptionHandlers
-        log.error("Exception occurred while processing '{}' message exception handler.", messageExceptionHandler, e);
-      }
-    }
+		for (MessageExceptionHandler messageExceptionHandler : messageExceptionHandlers) {
+			try {
+				messageExceptionHandler.handle(message, cause);
+			} catch (Exception e) {
+				// To catch any exception in the MessageExceptionHandler to avoid the
+				// interruption in other MessageExceptionHandlers
+				log.error("Exception occurred while processing '{}' message exception handler.",
+						messageExceptionHandler, e);
+			}
+		}
 
-    this.errorTemplate.send(deadLetterExchangeName, deadLetterRoutingKey, message);
+		this.errorTemplate.send(deadLetterExchangeName, deadLetterRoutingKey, message);
 
-    log.warn("Republishing failed message to exchange '{}', routing key '{}', message {{}} , cause {}",
-            deadLetterExchangeName, deadLetterRoutingKey, message, cause);
+		log.warn("Republishing failed message to exchange '{}', routing key '{}', message {{}} , cause {}",
+				deadLetterExchangeName, deadLetterRoutingKey, message, cause);
 
+	}
 
-  }
-
-  /**
-   * This is a dummy implementation that doesn't do anything.. If you extend this class, you can simply override this method to provide your own additional headers
-   * @param message
-   * @param cause
-   * @return
-   */
-  protected Map<String, Object> loadAdditionalHeaders(Message message, Throwable cause) {
-    log.info("No additional headers added for message {}, cause {}", message, cause == null ? null : cause.getMessage());
-    return new HashMap<>();
-  }
+	/**
+	 * This is a dummy implementation that doesn't do anything.. If you extend this
+	 * class, you can simply override this method to provide your own additional
+	 * headers
+	 * 
+	 * @param message
+	 * @param cause
+	 * @return
+	 */
+	protected Map<String, Object> loadAdditionalHeaders(Message message, Throwable cause) {
+		log.info("No additional headers added for message {}, cause {}", message,
+				cause == null ? null : cause.getMessage());
+		return new HashMap<>();
+	}
 
 }

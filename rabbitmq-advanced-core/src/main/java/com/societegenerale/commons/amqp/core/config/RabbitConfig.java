@@ -121,7 +121,7 @@ public class RabbitConfig {
       }
     }
 
-    if (reQueueConfig != null) {
+    if (reQueueConfig != null && reQueueConfig.isEnabled()) {
       log.info("Validating ReQueueConfig...");
       valid = validate("ReQueueConfig", reQueueConfig, valid);
     }
