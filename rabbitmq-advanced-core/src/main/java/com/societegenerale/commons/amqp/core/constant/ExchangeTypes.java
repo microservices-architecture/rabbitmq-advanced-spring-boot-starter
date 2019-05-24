@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.societegenerale.commons.amqp.core.config;
+package com.societegenerale.commons.amqp.core.constant;
 
 /**
  * Created by Anand Manissery on 7/13/2017.

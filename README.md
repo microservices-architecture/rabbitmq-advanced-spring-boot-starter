@@ -314,6 +314,15 @@ rabbitmq:
   3. **queue**        : `This indicate the 'queue' configuration for requeue`
 
   4. **routing-key**  : `This indicate the 'routing-key' configuration for requeue`
+  
+  5. **threshold**  : `This indicate the 'threshold' configuration for requeue, by default is 3`
+  
+  6. **cron**  : `This indicate the 'cron' configuration for requeue`
+  
+  7. **timeout**  : `This indicate the 'timeout' configuration for requeue`
+  
+  8. **message-count**  : `This indicate the 'message-count' configuration for requeue`
+  
 
 Below is the format for requeue message which requeue 3 message from 'some-queue.dlq' to 'some-queue'
 

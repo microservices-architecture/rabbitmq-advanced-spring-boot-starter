@@ -23,5 +23,5 @@ import org.springframework.amqp.core.Message;
  */
 @FunctionalInterface
 public interface MessageExceptionHandler {
-  void handle(Message message, Throwable cause);
+	void handle(Message message, Throwable cause);
 }

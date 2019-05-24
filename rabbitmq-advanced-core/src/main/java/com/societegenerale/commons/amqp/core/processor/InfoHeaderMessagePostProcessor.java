@@ -16,17 +16,20 @@
 
 package com.societegenerale.commons.amqp.core.processor;
 
-import lombok.Data;
-import lombok.Singular;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import com.societegenerale.commons.amqp.core.constant.MessageHeaders;
+
+import lombok.Data;
+import lombok.Singular;
 
 /**
  * Created by Anand Manissery on 7/13/2017.
@@ -34,20 +37,19 @@ import java.util.Map;
 @Data
 public class InfoHeaderMessagePostProcessor implements MessagePostProcessor {
 
-  @Singular
-  private Map<String, Object> headers = new HashMap<>();
+	@Singular
+	private Map<String, Object> headers = new HashMap<>();
 
-  @Autowired
-  private Environment environment;
+	@Autowired
+	private Environment environment;
 
-  @Override
-  public Message postProcessMessage(final Message message) {
-    MessageProperties messageProperties = message.getMessageProperties();
-    headers.putIfAbsent("spring-application-name",
-        getEnvironment().getProperty("spring.application.name", String.class));
-    headers.put("execution-time", new Date().toString());
-    messageProperties.getHeaders().putIfAbsent("info", headers);
-    return message;
-  }
-
+	@Override
+	public Message postProcessMessage(final Message message) {
+		MessageProperties messageProperties = message.getMessageProperties();
+		headers.putIfAbsent(MessageHeaders.APPLICATION_NAME.value(),
+				getEnvironment().getProperty("spring.application.name", String.class));
+		headers.put(MessageHeaders.EXECUTION_TIME.value(), Instant.now());
+		messageProperties.getHeaders().putIfAbsent(MessageHeaders.INFO.value(), headers);
+		return message;
+	}
 }

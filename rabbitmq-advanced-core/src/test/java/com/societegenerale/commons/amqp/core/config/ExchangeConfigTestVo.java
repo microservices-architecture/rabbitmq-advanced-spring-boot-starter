@@ -17,7 +17,8 @@
 package com.societegenerale.commons.amqp.core.config;
 
 import com.societegenerale.commons.amqp.core.config.ExchangeConfig;
-import com.societegenerale.commons.amqp.core.config.ExchangeTypes;
+import com.societegenerale.commons.amqp.core.constant.ExchangeTypes;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.BeanUtils;

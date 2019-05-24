@@ -16,9 +16,8 @@
 
 package com.societegenerale.commons.amqp.core.config;
 
-import com.societegenerale.commons.amqp.core.exception.RabbitmqConfigurationException;
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Exchange;
@@ -27,7 +26,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Map;
+import com.societegenerale.commons.amqp.core.constant.ExchangeTypes;
+import com.societegenerale.commons.amqp.core.exception.RabbitmqConfigurationException;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by Anand Manissery on 7/13/2017.
@@ -41,53 +49,54 @@ import java.util.Map;
 @ConfigurationProperties
 public class BindingConfig extends AbstractConfig {
 
-  /**
-   * Exchange to bind. Provide the exchange key from the exchange configuration
-   */
-  private String exchange;
+	/**
+	 * Exchange to bind. Provide the exchange key from the exchange configuration
+	 */
+	private String exchange;
 
-  /**
-   * Queue to bind. Provide the queue key from the queue configuration
-   */
-  private String queue;
+	/**
+	 * Queue to bind. Provide the queue key from the queue configuration
+	 */
+	private String queue;
 
-  /**
-   * Routing Key for exchange and queue binding.
-   */
-  private String routingKey;
+	/**
+	 * Routing Key for exchange and queue binding.
+	 */
+	private String routingKey;
 
-  /**
-   * Arguments for the bindings
-   */
-  @Singular
-  private Map<String, Object> arguments;
+	/**
+	 * Arguments for the bindings
+	 */
+	@Singular
+	private Map<String, Object> arguments;
 
-  @Override
-  public boolean validate() {
-    boolean valid = true;
-    if (StringUtils.isEmpty(getExchange())) {
-      log.error("Invalid Exchange : Exchange must be provided for a binding");
-      valid = false;
-    }
-    if (StringUtils.isEmpty(getQueue())) {
-      log.error("Invalid Queue : Queue must be provided for a binding");
-      valid = false;
-    }
-    if (valid) {
-      log.info("Binding configuration validated successfully for Binding '{}'", this);
-    }
-    return valid;
-  }
+	@Override
+	public boolean validate() {
+		boolean valid = true;
+		if (StringUtils.isEmpty(getExchange())) {
+			log.error("Invalid Exchange : Exchange must be provided for a binding");
+			valid = false;
+		}
+		if (StringUtils.isEmpty(getQueue())) {
+			log.error("Invalid Queue : Queue must be provided for a binding");
+			valid = false;
+		}
+		if (valid) {
+			log.info("Binding configuration validated successfully for Binding '{}'", this);
+		}
+		return valid;
+	}
 
-  public Binding bind(Exchange exchange, Queue queue) {
-    if (ExchangeTypes.HEADERS.getValue().equals(exchange.getType()) && CollectionUtils.isEmpty(getArguments())) {
-      throw new RabbitmqConfigurationException(String
-          .format("Invalid Arguments : Arguments must be provided for a header exchange for binding {%s}", this));
-    } else if (StringUtils.isEmpty(getRoutingKey())) {
-      throw new RabbitmqConfigurationException(String
-          .format("Invalid RoutingKey : RoutingKey must be provided for a non header exchange for binding {%s}", this));
-    }
-    return BindingBuilder.bind(queue).to(exchange).with(getRoutingKey()).and(getArguments());
-  }
+	public Binding bind(Exchange exchange, Queue queue) {
+		if (ExchangeTypes.HEADERS.getValue().equals(exchange.getType()) && CollectionUtils.isEmpty(getArguments())) {
+			throw new RabbitmqConfigurationException(String.format(
+					"Invalid Arguments : Arguments must be provided for a header exchange for binding {%s}", this));
+		} else if (StringUtils.isEmpty(getRoutingKey())) {
+			throw new RabbitmqConfigurationException(String.format(
+					"Invalid RoutingKey : RoutingKey must be provided for a non header exchange for binding {%s}",
+					this));
+		}
+		return BindingBuilder.bind(queue).to(exchange).with(getRoutingKey()).and(getArguments());
+	}
 
 }

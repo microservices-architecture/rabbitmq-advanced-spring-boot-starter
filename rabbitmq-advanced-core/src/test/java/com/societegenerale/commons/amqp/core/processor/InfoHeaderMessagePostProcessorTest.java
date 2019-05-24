@@ -23,6 +23,8 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.core.env.Environment;
 
+import com.societegenerale.commons.amqp.core.constant.MessageHeaders;
+
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -35,39 +37,42 @@ import static org.junit.Assert.assertThat;
  */
 public class InfoHeaderMessagePostProcessorTest {
 
-  private InfoHeaderMessagePostProcessor infoHeaderMessagePostProcessor;
+	private InfoHeaderMessagePostProcessor infoHeaderMessagePostProcessor;
 
-  private Message message;
+	private Message message;
 
-  private Environment environment;
+	private Environment environment;
 
-  @Before
-  public void setUp() {
-    environment = Mockito.mock(Environment.class);
-    Mockito.when(environment.getProperty("spring.application.name", String.class)).thenReturn("my-application-name");
-    infoHeaderMessagePostProcessor = new InfoHeaderMessagePostProcessor();
-    infoHeaderMessagePostProcessor.setEnvironment(environment);
-    infoHeaderMessagePostProcessor.getHeaders().put("info-key", "info-value");
-    infoHeaderMessagePostProcessor.setEnvironment(environment);
-    message = MessageBuilder.withBody("DummyMessage".getBytes()).build();
-  }
+	@Before
+	public void setUp() {
+		environment = Mockito.mock(Environment.class);
+		Mockito.when(environment.getProperty("spring.application.name", String.class))
+				.thenReturn("my-application-name");
+		infoHeaderMessagePostProcessor = new InfoHeaderMessagePostProcessor();
+		infoHeaderMessagePostProcessor.setEnvironment(environment);
+		infoHeaderMessagePostProcessor.getHeaders().put("info-key", "info-value");
+		infoHeaderMessagePostProcessor.setEnvironment(environment);
+		message = MessageBuilder.withBody("DummyMessage".getBytes()).build();
+	}
 
-  @Test
-  public void addInfoHeadersToMessage() {
-    infoHeaderMessagePostProcessor.postProcessMessage(message);
-    Map<String, Object> headers = (Map<String, Object>) message.getMessageProperties().getHeaders().get("info");
-    assertThat(headers.get("info-key"), is(equalTo("info-value")));
-    assertThat(headers.get("spring-application-name"), is(equalTo("my-application-name")));
-    assertNotNull(headers.get("execution-time"));
-  }
+	@Test
+	public void addInfoHeadersToMessage() {
+		infoHeaderMessagePostProcessor.postProcessMessage(message);
+		Map<String, Object> headers = (Map<String, Object>) message.getMessageProperties().getHeaders()
+				.get(MessageHeaders.INFO.value());
+		assertThat(headers.get("info-key"), is(equalTo("info-value")));
+		assertThat(headers.get(MessageHeaders.APPLICATION_NAME.value()), is(equalTo("my-application-name")));
+		assertNotNull(headers.get(MessageHeaders.EXECUTION_TIME.value()));
+	}
 
-  @Test
-  public void addDefaultHeadersToMessage() {
-    infoHeaderMessagePostProcessor.getHeaders().clear();
-    infoHeaderMessagePostProcessor.postProcessMessage(message);
-    Map<String, Object> headers = (Map<String, Object>) message.getMessageProperties().getHeaders().get("info");
-    assertThat(headers.get("spring-application-name"), is(equalTo("my-application-name")));
-    assertNotNull(headers.get("execution-time"));
-  }
+	@Test
+	public void addDefaultHeadersToMessage() {
+		infoHeaderMessagePostProcessor.getHeaders().clear();
+		infoHeaderMessagePostProcessor.postProcessMessage(message);
+		Map<String, Object> headers = (Map<String, Object>) message.getMessageProperties().getHeaders()
+				.get(MessageHeaders.INFO.value());
+		assertThat(headers.get(MessageHeaders.APPLICATION_NAME.value()), is(equalTo("my-application-name")));
+		assertNotNull(headers.get(MessageHeaders.EXECUTION_TIME.value()));
+	}
 
 }

@@ -16,14 +16,22 @@
 
 package com.societegenerale.commons.amqp.core.config;
 
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
+
 import org.springframework.amqp.core.AbstractExchange;
 import org.springframework.amqp.core.CustomExchange;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
 
-import java.util.Map;
+import com.societegenerale.commons.amqp.core.constant.ExchangeTypes;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by Anand Manissery on 7/13/2017.

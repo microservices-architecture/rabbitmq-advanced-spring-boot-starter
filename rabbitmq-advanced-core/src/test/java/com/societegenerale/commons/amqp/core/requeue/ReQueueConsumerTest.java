@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.societegenerale.commons.amqp.core.constant.MessageHeaders;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -40,37 +42,35 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class ReQueueConsumerTest {
 
-  @Autowired
-  private ReQueueConsumer reQueueConsumer;
+	@Autowired
+	private ReQueueConsumer reQueueConsumer;
 
-  @Autowired
-  private RabbitTemplate rabbitTemplate;
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
 
-  private Message message;
+	private Message message;
 
-  private ReQueueMessage reQueueMessage;
+	private ReQueueMessage reQueueMessage;
 
-  @Before
-  public void setUp() {
-    MessageProperties messageProperties = MessagePropertiesBuilder.newInstance().setHeader("x-original-queue", "original-queue").build();
-    message = MessageBuilder.withBody("DummyMessage".getBytes()).andProperties(messageProperties).build();
-    reQueueMessage = ReQueueMessage.builder()
-        .deadLetterQueue("dlq-name")
-        .messageCount(2)
-        .build();
-  }
+	@Before
+	public void setUp() {
+		MessageProperties messageProperties = MessagePropertiesBuilder.newInstance()
+				.setHeader(MessageHeaders.X_ORIGINAL_QUEUE.value(), "original-queue").build();
+		message = MessageBuilder.withBody("DummyMessage".getBytes()).andProperties(messageProperties).build();
+		reQueueMessage = ReQueueMessage.builder().deadLetterQueue("dlq-name").messageCount(2).build();
+	}
 
-  @Test
-  public void reQueueMessageUntilTheMessageCount() {
-    when(rabbitTemplate.receive(anyString(), anyLong())).thenReturn(message);
-    reQueueConsumer.onMessage(reQueueMessage);
-    verify(rabbitTemplate, times(2)).send(anyString(), any(Message.class));
-  }
+	@Test
+	public void reQueueMessageUntilTheMessageCount() {
+		when(rabbitTemplate.receive(anyString(), anyLong())).thenReturn(message);
+		reQueueConsumer.onMessage(reQueueMessage);
+		verify(rabbitTemplate, times(2)).send(anyString(), any(Message.class));
+	}
 
-  @Test
-  public void shouldNotReQueueIfTheMessageIsNull() {
-    when(rabbitTemplate.receive(anyString(), anyLong())).thenReturn(null);
-    reQueueConsumer.onMessage(reQueueMessage);
-    verify(rabbitTemplate, times(0)).send(anyString(), any(Message.class));
-  }
+	@Test
+	public void shouldNotReQueueIfTheMessageIsNull() {
+		when(rabbitTemplate.receive(anyString(), anyLong())).thenReturn(null);
+		reQueueConsumer.onMessage(reQueueMessage);
+		verify(rabbitTemplate, times(0)).send(anyString(), any(Message.class));
+	}
 }

@@ -17,6 +17,16 @@
 package com.societegenerale.commons.amqp.core.config;
 
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,11 +34,7 @@ import org.springframework.amqp.core.AbstractExchange;
 import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import com.societegenerale.commons.amqp.core.constant.ExchangeTypes;
 
 public class ExchangeConfigTest {
 

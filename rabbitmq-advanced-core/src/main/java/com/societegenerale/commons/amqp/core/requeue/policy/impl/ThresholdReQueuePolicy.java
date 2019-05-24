@@ -16,33 +16,34 @@
 
 package com.societegenerale.commons.amqp.core.requeue.policy.impl;
 
-import com.societegenerale.commons.amqp.core.requeue.policy.ReQueuePolicy;
+import java.util.Map;
+
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Map;
+import com.societegenerale.commons.amqp.core.requeue.policy.ReQueuePolicy;
 
 /**
  * Created by Anand Manissery on 7/13/2017.
  */
 public class ThresholdReQueuePolicy implements ReQueuePolicy {
 
-  private static final String X_REQUEUE_COUNT = "x-requeue-count";
+	private static final String X_REQUEUE_COUNT = "x-requeue-count";
 
-  @Value("${rabbitmq.auto-config.re-queue-config.threshold:3}")
-  private int threshold;
+	@Value("${rabbitmq.auto-config.re-queue-config.threshold:3}")
+	private int threshold;
 
-  @Override
-  public boolean canReQueue(Message message) {
-    Map<String, Object> headers = message.getMessageProperties().getHeaders();
-    int requeueCount = 0;
-    if (headers.containsKey(X_REQUEUE_COUNT)) {
-      requeueCount = (int) headers.get(X_REQUEUE_COUNT);
-    }
-    if (threshold > requeueCount) {
-      headers.put(X_REQUEUE_COUNT, ++requeueCount);
-      return true;
-    }
-    return false;
-  }
+	@Override
+	public boolean canReQueue(Message message) {
+		Map<String, Object> headers = message.getMessageProperties().getHeaders();
+		int requeueCount = 0;
+		if (headers.containsKey(X_REQUEUE_COUNT)) {
+			requeueCount = (int) headers.get(X_REQUEUE_COUNT);
+		}
+		if (threshold > requeueCount) {
+			headers.put(X_REQUEUE_COUNT, ++requeueCount);
+			return true;
+		}
+		return false;
+	}
 }

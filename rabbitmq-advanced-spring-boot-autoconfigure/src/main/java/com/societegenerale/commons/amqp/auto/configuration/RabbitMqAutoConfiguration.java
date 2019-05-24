@@ -16,11 +16,16 @@
 
 package com.societegenerale.commons.amqp.auto.configuration;
 
-import brave.spring.rabbit.SpringRabbitTracing;
-import com.societegenerale.commons.amqp.core.config.*;
-import com.societegenerale.commons.amqp.core.config.ExchangeTypes;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.core.CorrelationDataPostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -33,14 +38,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.PostConstruct;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.societegenerale.commons.amqp.core.config.BindingConfig;
+import com.societegenerale.commons.amqp.core.config.ExchangeConfig;
+import com.societegenerale.commons.amqp.core.config.QueueConfig;
+import com.societegenerale.commons.amqp.core.config.RabbitConfig;
+import com.societegenerale.commons.amqp.core.config.ReQueueConfig;
+import com.societegenerale.commons.amqp.core.constant.ExchangeTypes;
+
+import brave.spring.rabbit.SpringRabbitTracing;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @Import(RabbitMqConfiguration.class)
 @EnableRabbit
-@ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "enabled", matchIfMissing = false)
 @Slf4j
 public class RabbitMqAutoConfiguration implements ApplicationContextAware {
 
@@ -71,7 +82,7 @@ public class RabbitMqAutoConfiguration implements ApplicationContextAware {
 
   private Exchange loadDeadLetterExchangeConfig() {
     ExchangeConfig deadLetterExchangeConfig =  (rabbitConfig.getDeadLetterConfig() != null && rabbitConfig.getDeadLetterConfig().getDeadLetterExchange() != null) ?
-       rabbitConfig.getDeadLetterConfig().getDeadLetterExchange():ExchangeConfig.builder().name("DEFAULT-DEAD-LETTER-EXCHANGE.DLQ").type(ExchangeTypes.TOPIC).build();
+       rabbitConfig.getDeadLetterConfig().getDeadLetterExchange():ExchangeConfig.builder().name("DEFAULT-DEAD-LETTER-EXCHANGE.dlq").type(ExchangeTypes.TOPIC).build();
     Exchange deadLetterExchange = deadLetterExchangeConfig.buildExchange(rabbitConfig.getDefaultExchange());
     rabbitAdmin.declareExchange(deadLetterExchange);
     log.info("Auto configuring dead letter exchange: Key = {} , DeadLetterExchange = {{}}", deadLetterExchange.getName(), deadLetterExchange);

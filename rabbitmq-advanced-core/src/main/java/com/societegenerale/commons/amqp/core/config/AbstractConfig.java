@@ -16,12 +16,12 @@
 
 package com.societegenerale.commons.amqp.core.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Anand Manissery on 7/13/2017.
@@ -31,30 +31,34 @@ import java.util.Map;
 @Slf4j
 public abstract class AbstractConfig {
 
-  private boolean defaultConfigApplied;
+	private boolean defaultConfigApplied;
 
-  protected <T> T getDefaultConfig(String name, String property, T currentValue, T defaultConfigValue, T defaultValue) {
-    T value = getDefaultConfig(currentValue, defaultConfigValue);
-    if (null == value) {
-      log.warn("'{}' : '{}' : No '{}' configuration provided. Applying default value {} : {} ", getClass().getName(), name, property, property, defaultValue);
-    }
-    return value != null ? value : defaultValue;
-  }
+	protected <T> T getDefaultConfig(String name, String property, T currentValue, T defaultConfigValue,
+			T defaultValue) {
+		T value = getDefaultConfig(currentValue, defaultConfigValue);
+		if (null == value) {
+			log.warn("'{}' : '{}' : No '{}' configuration provided. Applying default value {} : {} ",
+					getClass().getName(), name, property, property, defaultValue);
+			value = defaultValue;
+		}
+		return value;
+	}
 
-  protected <T> T getDefaultConfig(T currentValue, T defaultConfigValue) {
-    return currentValue != null ? currentValue : defaultConfigValue;
-  }
+	protected <T> T getDefaultConfig(T currentValue, T defaultConfigValue) {
+		return currentValue != null ? currentValue : defaultConfigValue;
+	}
 
-  protected Map<String, Object> loadArguments(Map<String, Object> currentArguments, Map<String, Object> defaultArguments) {
-    Map<String, Object> arguments = new HashMap<>();
-    if (defaultArguments != null) {
-      arguments.putAll(defaultArguments);
-    }
-    if (currentArguments != null) {
-      arguments.putAll(currentArguments);
-    }
-    return arguments;
-  }
+	protected Map<String, Object> loadArguments(Map<String, Object> currentArguments,
+			Map<String, Object> defaultArguments) {
+		Map<String, Object> arguments = new HashMap<>();
+		if (defaultArguments != null) {
+			arguments.putAll(defaultArguments);
+		}
+		if (currentArguments != null) {
+			arguments.putAll(currentArguments);
+		}
+		return arguments;
+	}
 
-  public abstract boolean validate();
+	public abstract boolean validate();
 }

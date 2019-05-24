@@ -16,6 +16,7 @@
 
 package com.societegenerale.commons.amqp.core.requeue;
 
+import com.societegenerale.commons.amqp.core.constant.MessageHeaders;
 import com.societegenerale.commons.amqp.core.requeue.policy.ReQueuePolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -32,33 +33,34 @@ import java.util.Map;
 @Slf4j
 public class ReQueueConsumer {
 
-  @Autowired
-  private RabbitTemplate rabbitTemplate;
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
 
-  @Autowired(required = false)
-  private ReQueuePolicy reQueuePolicy;
+	@Autowired(required = false)
+	private ReQueuePolicy reQueuePolicy;
 
-  @Value("${rabbitmq.auto-config.re-queue-config.timeout:3000}")
-  private long timeout;
+	@Value("${rabbitmq.auto-config.re-queue-config.timeout:3000}")
+	private long timeout;
 
-  @Value("${rabbitmq.auto-config.re-queue-config.threshold:3}")
-  private int threshold;
+	@Value("${rabbitmq.auto-config.re-queue-config.threshold:3}")
+	private int threshold;
 
-  @RabbitListener(queues = "${rabbitmq.auto-config.re-queue-config.queue.name}")
-  public void onMessage(ReQueueMessage reQueueMessage) {
-    int count = 0;
-    do {
-      Message message = rabbitTemplate.receive(reQueueMessage.getDeadLetterQueue(), timeout);
-      if (message == null) {
-        break;
-      }
-      Map<String, Object> headers = message.getMessageProperties().getHeaders();
-      if (reQueuePolicy.canReQueue(message)) {
-        String queueName = (String) headers.get("x-original-queue");
-        rabbitTemplate.send(queueName, message);
-      }
-      count++;
-    } while (reQueueMessage.getMessageCount() < 0 || reQueueMessage.getMessageCount() > count);
-  }
+	@RabbitListener(queues = "${rabbitmq.auto-config.re-queue-config.queue.name}")
+	public void onMessage(ReQueueMessage reQueueMessage) {
+		log.info("Requeue on reQueueMessage {}", reQueueMessage);
+		int count = 0;
+		do {
+			Message message = rabbitTemplate.receive(reQueueMessage.getDeadLetterQueue(), timeout);
+			if (message == null) {
+				break;
+			}
+			Map<String, Object> headers = message.getMessageProperties().getHeaders();
+			if (reQueuePolicy.canReQueue(message)) {
+				String queueName = (String) headers.get(MessageHeaders.X_ORIGINAL_QUEUE.value());
+				rabbitTemplate.send(queueName, message);
+			}
+			count++;
+		} while (reQueueMessage.getMessageCount() < 0 || reQueueMessage.getMessageCount() > count);
+	}
 
 }

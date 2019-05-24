@@ -16,16 +16,33 @@
 
 package com.societegenerale.commons.amqp.core.recoverer;
 
-import com.societegenerale.commons.amqp.core.config.RabbitConfig;
-import com.societegenerale.commons.amqp.core.recoverer.handler.MessageExceptionHandler;
-import lombok.extern.slf4j.Slf4j;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.CORRELATION_ID;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_DEAD_DETTER_EXCHANGE;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_DEAD_LETTER_QUEUE;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_EXCEPTION_MESSAGE;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_EXCEPTION_ROOT_CAUSE_MESSAGE;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_EXCEPTION_STACKTRACE;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_ORIGINAL_EXCHANGE;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_ORIGINAL_QUEUE;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_ORIGINAL_ROUTINGKEY;
+import static com.societegenerale.commons.amqp.core.constant.MessageHeaders.X_RECOVER_TIME;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.retry.MessageRecoverer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import com.societegenerale.commons.amqp.core.config.RabbitConfig;
+import com.societegenerale.commons.amqp.core.recoverer.handler.MessageExceptionHandler;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by Anand Manissery on 7/13/2017.
@@ -45,20 +62,20 @@ public class DeadLetterMessageRecoverer implements MessageRecoverer {
 	@Override
 	public void recover(final Message message, final Throwable cause) {
 		Map<String, Object> headers = message.getMessageProperties().getHeaders();
-		headers.put("x-exception-stacktrace", ExceptionUtils.getFullStackTrace(cause));
-		headers.put("x-exception-message", ExceptionUtils.getMessage(cause));
-		headers.put("x-exception-root-cause-message", ExceptionUtils.getRootCauseMessage(cause));
-		headers.put("x-original-exchange", message.getMessageProperties().getReceivedExchange());
-		headers.put("x-original-routingKey", message.getMessageProperties().getReceivedRoutingKey());
-		headers.put("x-original-queue", message.getMessageProperties().getConsumerQueue());
-		headers.put("x-recover-time", new Date().toString());
+		headers.put(X_EXCEPTION_STACKTRACE.value(), ExceptionUtils.getFullStackTrace(cause));
+		headers.put(X_EXCEPTION_MESSAGE.value(), ExceptionUtils.getMessage(cause));
+		headers.put(X_EXCEPTION_ROOT_CAUSE_MESSAGE.value(), ExceptionUtils.getRootCauseMessage(cause));
+		headers.put(X_ORIGINAL_EXCHANGE.value(), message.getMessageProperties().getReceivedExchange());
+		headers.put(X_ORIGINAL_ROUTINGKEY.value(), message.getMessageProperties().getReceivedRoutingKey());
+		headers.put(X_ORIGINAL_QUEUE.value(), message.getMessageProperties().getConsumerQueue());
+		headers.put(X_RECOVER_TIME.value(), Instant.now());
 		String deadLetterExchangeName = rabbitmqProperties.getDeadLetterConfig().getDeadLetterExchange().getName();
 		String deadLetterRoutingKey = rabbitmqProperties.getDeadLetterConfig()
 				.createDeadLetterQueueName(message.getMessageProperties().getConsumerQueue());
-		headers.put("x-dead-letter-exchange", deadLetterExchangeName);
-		headers.put("x-dead-letter-queue", deadLetterRoutingKey);
-		if (headers.containsKey("correlation-id")) {
-			message.getMessageProperties().setCorrelationId((String) headers.get("correlation-id"));
+		headers.put(X_DEAD_DETTER_EXCHANGE.value(), deadLetterExchangeName);
+		headers.put(X_DEAD_LETTER_QUEUE.value(), deadLetterRoutingKey);
+		if (headers.containsKey(CORRELATION_ID.value())) {
+			message.getMessageProperties().setCorrelationId((String) headers.get(CORRELATION_ID.value()));
 		}
 
 		headers.putAll(loadAdditionalHeaders(message, cause));

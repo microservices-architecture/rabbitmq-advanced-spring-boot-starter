@@ -16,6 +16,7 @@
 
 package com.societegenerale.commons.amqp.core.recoverer.handler.impl;
 
+import com.societegenerale.commons.amqp.core.constant.MessageHeaders;
 import com.societegenerale.commons.amqp.core.recoverer.handler.MessageExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -31,33 +32,29 @@ import java.util.Map;
 @Slf4j
 public class LogMessageExceptionHandler implements MessageExceptionHandler {
 
-  private static List directlyReadableContentTypes;
+	private static List<String> directlyReadableContentTypes;
 
-  static{
+	static {
+		List<String> tmpDirectlyReadableContentTypes = Arrays.asList("text/plain", "application/json", "text/x-json",
+				"application/xml");
+		directlyReadableContentTypes = Collections.unmodifiableList(tmpDirectlyReadableContentTypes);
 
-    List tmpDirectlyReadableContentTypes = Arrays.asList("text/plain",
-                                                         "application/json",
-                                                         "text/x-json",
-                                                         "application/xml");
+	}
 
-    directlyReadableContentTypes=Collections.unmodifiableList(tmpDirectlyReadableContentTypes);
+	@Override
+	public void handle(Message message, Throwable cause) {
+		Map<String, Object> headers = message.getMessageProperties().getHeaders();
+		log.warn(
+				"Exception occurred while processing the message from queue {{}} , message {{}} , headers {{}} :  cause",
+				headers.get(MessageHeaders.X_ORIGINAL_QUEUE.value()), getMessageString(message), headers, cause);
+	}
 
-  }
-
-  @Override
-  public void handle(Message message, Throwable cause) {
-    Map<String, Object> headers = message.getMessageProperties().getHeaders();
-    log.warn("Exception occurred while processing the message from queue {{}} , message {{}} , headers {{}} :  cause",
-        headers.get("x-original-queue"), getMessageString(message), headers, cause);
-  }
-
-  protected String getMessageString(Message message) {
-    String contentType = message.getMessageProperties() != null ? message.getMessageProperties().getContentType() : null;
-
-    if (directlyReadableContentTypes.contains(contentType)) {
-      return new String(message.getBody());
-    } else {
-      return Arrays.toString(message.getBody()) + "(byte[" + message.getBody().length + "])";
-    }
-  }
+	protected String getMessageString(Message message) {
+		if (message.getMessageProperties() != null && directlyReadableContentTypes.parallelStream()
+				.anyMatch(e -> e.equalsIgnoreCase(message.getMessageProperties().getContentType()))) {
+			return new String(message.getBody());
+		} else {
+			return Arrays.toString(message.getBody()) + "(byte[" + message.getBody().length + "])";
+		}
+	}
 }

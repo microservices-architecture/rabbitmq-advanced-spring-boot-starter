@@ -17,6 +17,7 @@
 package com.societegenerale.commons.amqp.core.config;
 
 
+import com.societegenerale.commons.amqp.core.constant.ExchangeTypes;
 import com.societegenerale.commons.amqp.core.exception.RabbitmqConfigurationException;
 import org.junit.Rule;
 import org.junit.Test;

@@ -16,16 +16,6 @@
 
 package com.societegenerale.commons.amqp.auto.configuration;
 
-import com.societegenerale.commons.amqp.core.config.RabbitConfig;
-import com.societegenerale.commons.amqp.core.processor.CorrelationPostProcessor;
-import com.societegenerale.commons.amqp.core.processor.DefaultCorrelationDataPostProcessor;
-import com.societegenerale.commons.amqp.core.processor.DefaultCorrelationPostProcessor;
-import com.societegenerale.commons.amqp.core.processor.InfoHeaderMessagePostProcessor;
-import com.societegenerale.commons.amqp.core.recoverer.DeadLetterMessageRecoverer;
-import com.societegenerale.commons.amqp.core.requeue.AutoReQueueScheduler;
-import com.societegenerale.commons.amqp.core.requeue.ReQueueConsumer;
-import com.societegenerale.commons.amqp.core.requeue.policy.ReQueuePolicy;
-import com.societegenerale.commons.amqp.core.requeue.policy.impl.ThresholdReQueuePolicy;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.CorrelationDataPostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -39,75 +29,87 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import com.societegenerale.commons.amqp.core.config.RabbitConfig;
+import com.societegenerale.commons.amqp.core.processor.CorrelationPostProcessor;
+import com.societegenerale.commons.amqp.core.processor.DefaultCorrelationDataPostProcessor;
+import com.societegenerale.commons.amqp.core.processor.DefaultCorrelationPostProcessor;
+import com.societegenerale.commons.amqp.core.processor.InfoHeaderMessagePostProcessor;
+import com.societegenerale.commons.amqp.core.recoverer.DeadLetterMessageRecoverer;
+import com.societegenerale.commons.amqp.core.requeue.AutoReQueueScheduler;
+import com.societegenerale.commons.amqp.core.requeue.ReQueueConsumer;
+import com.societegenerale.commons.amqp.core.requeue.policy.ReQueuePolicy;
+import com.societegenerale.commons.amqp.core.requeue.policy.impl.ThresholdReQueuePolicy;
+
 import brave.Tracer;
 
-
 @Configuration
-@ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "enabled", matchIfMissing = false)
 @EnableScheduling
 public class RabbitMqConfiguration {
 
-  @Autowired(required = false)
-  private Tracer tracer;
+	@Autowired(required = false)
+	private Tracer tracer;
 
-  @Bean
-  public RabbitConfig rabbitConfig() {
-    return new RabbitConfig();
-  }
+	@Bean
+	public RabbitConfig rabbitConfig() {
+		return new RabbitConfig();
+	}
 
-  @Bean
-  @ConditionalOnMissingBean(MessageConverter.class)
-  public MessageConverter messageConverter() {
-    return new Jackson2JsonMessageConverter();
-  }
+	@Bean
+	@ConditionalOnMissingBean(MessageConverter.class)
+	public MessageConverter messageConverter() {
+		return new Jackson2JsonMessageConverter();
+	}
 
-  @Bean
-  @ConditionalOnMissingBean(MessageRecoverer.class)
-  public MessageRecoverer messageRecoverer() {
-    return new DeadLetterMessageRecoverer();
-  }
+	@Bean
+	@ConditionalOnMissingBean(MessageRecoverer.class)
+	public MessageRecoverer messageRecoverer() {
+		return new DeadLetterMessageRecoverer();
+	}
 
-  @Bean
-  public MessagePostProcessor headerMessagePostProcessor(RabbitConfig rabbitConfig) {
-    InfoHeaderMessagePostProcessor infoHeaderMessagePostProcessor = new InfoHeaderMessagePostProcessor();
-    infoHeaderMessagePostProcessor.setHeaders(rabbitConfig.getInfoHeaders());
-    return infoHeaderMessagePostProcessor;
-  }
+	@Bean
+	public MessagePostProcessor headerMessagePostProcessor(RabbitConfig rabbitConfig) {
+		InfoHeaderMessagePostProcessor infoHeaderMessagePostProcessor = new InfoHeaderMessagePostProcessor();
+		infoHeaderMessagePostProcessor.setHeaders(rabbitConfig.getInfoHeaders());
+		return infoHeaderMessagePostProcessor;
+	}
 
-  @Bean
-  @ConditionalOnMissingBean(CorrelationDataPostProcessor.class)
-  public CorrelationDataPostProcessor correlationDataPostProcessor(CorrelationPostProcessor correlationPostProcessor) {
-    return new DefaultCorrelationDataPostProcessor(correlationPostProcessor);
-  }
+	@Bean
+	@ConditionalOnMissingBean(CorrelationDataPostProcessor.class)
+	public CorrelationDataPostProcessor correlationDataPostProcessor(
+			CorrelationPostProcessor correlationPostProcessor) {
+		return new DefaultCorrelationDataPostProcessor(correlationPostProcessor);
+	}
 
-  @Bean
-  @ConditionalOnMissingBean(CorrelationPostProcessor.class)
-  public CorrelationPostProcessor correlationPostProcessor() {
-    return new DefaultCorrelationPostProcessor(tracer);
-  }
+	@Bean
+	@ConditionalOnMissingBean(CorrelationPostProcessor.class)
+	public CorrelationPostProcessor correlationPostProcessor() {
+		return new DefaultCorrelationPostProcessor(tracer);
+	}
 
-  @Bean
-  @ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "re-queue-config.enabled", matchIfMissing = true)
-  public ReQueueConsumer reQueueConsumer() {
-    return new ReQueueConsumer();
-  }
+	@Bean
+	@ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "re-queue-config.enabled", matchIfMissing = false)
+	public ReQueueConsumer reQueueConsumer() {
+		return new ReQueueConsumer();
+	}
 
-  @Bean
-  @ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "re-queue-config.auto-requeue-enabled")
-  public AutoReQueueScheduler autoReQueueScheduler() {
-    return new AutoReQueueScheduler();
-  }
+	@Bean
+	@ConditionalOnProperty(prefix = "rabbitmq.auto-config", name = "re-queue-config.auto-requeue-enabled")
+	public AutoReQueueScheduler autoReQueueScheduler() {
+		return new AutoReQueueScheduler();
+	}
 
-  @Bean
-  @ConditionalOnMissingBean(ReQueuePolicy.class)
-  public ReQueuePolicy reQueuePolicy() {
-    return new ThresholdReQueuePolicy();
-  }
+	@Bean
+	@ConditionalOnMissingBean(ReQueuePolicy.class)
+	public ReQueuePolicy reQueuePolicy() {
+		return new ThresholdReQueuePolicy();
+	}
 
-  @Bean
-  @ConditionalOnMissingBean(RabbitAdmin.class)
-  public RabbitAdmin rabbitAdmin(RabbitTemplate rabbitTemplate) {
-    return new RabbitAdmin(rabbitTemplate);
-  }
+	@Bean
+	@ConditionalOnMissingBean(RabbitAdmin.class)
+	public RabbitAdmin rabbitAdmin(RabbitTemplate rabbitTemplate) {
+		return new RabbitAdmin(rabbitTemplate);
+	}
 
 }
